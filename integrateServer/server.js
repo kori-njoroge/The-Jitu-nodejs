@@ -1,5 +1,9 @@
 const express = require('express');
 const app = express();
+const sql = require('mssql');
+const { config } = require('./sqlconfig');
+
+require('dotenv').config();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -54,14 +58,25 @@ const users = [
 
 // home route
 app.get('/', (req, res) => {
-    res.json(users)
+    res.send("Welcome G")
 })
 
+app.get('/users', async (req, res) => {
+    try {
+        console.log('-----------connectiiing-----------')
+        await sql.connect(config)
+        console.log("-----------connected--------------")
+        let users = await sql.query`SELECT * FROM users`
+        res.json(users.recordset)
+    } catch (error) {
+        res.json(error)
+        console.log(error)
+    }
+})
 // adding a user
 app.post('/users', (req, res) => {
     let newUser = req.body;
     users.push(newUser);
-    res.json(users)
 
 })
 
@@ -88,6 +103,17 @@ app.put('/users', (req, res) => {
 })
 
 // login
+// app.get('/userslogin', (req, res) => {
+//     console.log('first')
+// res.send(
+// ` <form>
+//         <label for ='name'>firstName</label>
+//         <input type='text' id='name' placeholder ='first name'></input>
+//     </form>`
+// )
+// })
+
+
 app.post('/userslogin', (req, res) => {
     const id = req.body.id
     const userName = req.body.firstName;
@@ -101,7 +127,7 @@ app.post('/userslogin', (req, res) => {
             } else {
                 res.send('False');
             }
-        }else{
+        } else {
             res.send('User does not exist');
         }
     })
@@ -115,5 +141,5 @@ app.delete('users:id', (req, res) => {
     res.json(newUsers);
 })
 
-const port = 5500;
+const port = process.env.PORT || 5555;
 app.listen(port, () => { console.log(`Server listening too port ${port}`) })
