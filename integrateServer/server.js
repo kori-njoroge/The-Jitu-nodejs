@@ -66,7 +66,7 @@ app.get('/users', async (req, res) => {
         console.log('-----------connectiiing-----------')
         await sql.connect(config)
         console.log("-----------connected--------------")
-        let users = await sql.query`SELECT * FROM users`
+        let users = await sql.query`SELECT * FROM dbo.myusers`
         res.json(users.recordset)
     } catch (error) {
         res.json(error)
