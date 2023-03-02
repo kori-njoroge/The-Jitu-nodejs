@@ -1,7 +1,25 @@
 const sql = require('mssql');
-const {config} = require('../sqlconfig');
+const { config } = require('../sqlconfig');
+const { createToken, validateToken } = require('../services/jwtServices')
+const { getUser } = require('../services/getUserService')
 
 module.exports = {
+    // adding a user
+    addUser: async (req, res) => {
+        let newUser = req.body;
+        users.push(newUser);
+    },
+    // login user
+    loginUser: async (req, res) => {
+        const { id, firstName, password } = req.body
+        let user = await getUser(id)
+        if (user === "User not found") res.json({ message: user })
+        if (user.password === password) {
+            let token = await createToken({ userid: user.id, first_name: user.firstName })
+            res.status(200).json({ message: "Login successful", token })
+        }
+        else res.json({ message: "Check credentials" })
+    },
     getAllUsers: async (req, res) => {
         try {
             console.log('-----------connectiiing-----------')
@@ -14,15 +32,11 @@ module.exports = {
             console.log(error)
         }
     },
-    // adding a user
-    addUser: async (req, res) => {
-        let newUser = req.body;
-        users.push(newUser);
-    },
+
     // getting single user
     getSingleUser: async (req, res) => {
         const { id } = req.params;
-        const user = users.find(user => user.id === Number(id));
+        const user = user.find(user => user.id === Number(id));
     },
 
     // updating user info.
@@ -38,27 +52,12 @@ module.exports = {
             }
         })
     },
-    loginUser: async (req, res) => {
-        const id = req.body.id
-        const userName = req.body.firstName;
-        const passPass = req.body.password;
-        users.map(user => {
-            if (user.id === Number(id)) {
-                if (user.firstName === userName && user.password === passPass) {
-                    res.send('True');
-                } else {
-                    res.send('False');
-                }
-            } else {
-                res.send('User does not exist');
-            }
-        })
-    },
     // delete a user.
     deleteUser: async (req, res) => {
         let { id } = req.body;
         let newUsers = users.filter(user => user.id !== Number(id))
         res.json(newUsers);
-    }
+    },
+    validateToken:async(token)
 
 }
