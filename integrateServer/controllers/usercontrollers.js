@@ -6,12 +6,15 @@ const { getUser } = require('../services/getUserService')
 module.exports = {
     // adding a user
     addUser: async (req, res) => {
-        let newUser = req.body;
-        users.push(newUser);
+        let { firstname, password, gender } = req.body;
+        await sql.connect(config);
+        let result = await sql.query`INSERT INTO dbo.myusers VALUES (${firstname},${password},${gender})`;
+        result = result.rowsAffected
+        if (result) res.status(200).json({ message: "User succesfully added!" })
     },
     // login user
     loginUser: async (req, res) => {
-        const { id, firstName, password } = req.body
+        const { id, password } = req.body
         let user = await getUser(id)
         if (user === "User not found") res.json({ message: user })
         if (user.password === password) {

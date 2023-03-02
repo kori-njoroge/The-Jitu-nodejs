@@ -13,7 +13,7 @@ app.use(express.json());
 // home route
 app.get('/', (req, res) => {
     res.send({message:"Welcome G"})
-})
+});
 
 app.use('/users',userRouter)
 
