@@ -15,7 +15,7 @@ module.exports = {
         let user = await getUser(id)
         if (user === "User not found") res.json({ message: user })
         if (user.password === password) {
-            let token = await createToken({ userid: user.id, first_name: user.firstName })
+            let token = await createToken({ userid: user.id })
             res.status(200).json({ message: "Login successful", token })
         }
         else res.json({ message: "Check credentials" })
@@ -58,6 +58,11 @@ module.exports = {
         let newUsers = users.filter(user => user.id !== Number(id))
         res.json(newUsers);
     },
-    validateToken:async(token)
+    validateTokenController: async (req, res) => {
+        let token = req.headers['authorization'];
+        token = token.split(" ")[1]
+        res.json({ resres: validateToken(token) })
+        console.log(validateToken(token))
+    }
 
 }
