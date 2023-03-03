@@ -6,7 +6,8 @@ const { getAllUsers,
     getSingleUser,
     loginUser,
     updateUserInfo,
-    validateTokenController
+    validateTokenController,
+    sendEmail
 } = require('../controllers/usercontrollers');
 
 userRouter.get('/',getAllUsers);
@@ -16,5 +17,6 @@ userRouter.post('/singleuser',getSingleUser);
 userRouter.post('/login',loginUser);
 userRouter.post('updateuser',updateUserInfo);
 userRouter.get('/validate',validateTokenController);
+userRouter.get('/sendmail',sendEmail);
 
 module.exports = userRouter;

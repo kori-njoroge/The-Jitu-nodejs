@@ -1,7 +1,8 @@
 const sql = require('mssql');
 const { config } = require('../sqlconfig');
 const { createToken, validateToken } = require('../services/jwtServices')
-const { getUser } = require('../services/getUserService')
+const { getUser } = require('../services/getUserService');
+const { sendMail } = require('../services/nodemailerServices');
 
 module.exports = {
     // adding a user
@@ -66,6 +67,16 @@ module.exports = {
         token = token.split(" ")[1]
         res.json({ resres: validateToken(token) })
         console.log(validateToken(token))
-    }
+    },
 
+
+    sendEmail: async (req, res) => {
+        let message = `Hello,Kori 
+        Your Registration was successful,
+        welcome.
+        Thank you `
+        let recipient = 'korijunior106@gmail.com'
+        console.log("send mail route")
+        res.json({ message: await sendMail(message, recipient) });
+    }
 }
