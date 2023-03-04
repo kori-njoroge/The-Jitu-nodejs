@@ -1,4 +1,6 @@
 const sql = require('mssql');
+const bcrypt = require('bcrypt');
+
 const { config } = require('../sqlconfig');
 const { createToken, validateToken } = require('../services/jwtServices')
 const { getUser } = require('../services/getUserService');
@@ -8,21 +10,28 @@ module.exports = {
     // adding a user
     addUser: async (req, res) => {
         let { firstname, password, gender } = req.body;
-        await sql.connect(config);
-        let result = await sql.query`INSERT INTO dbo.myusers VALUES (${firstname},${password},${gender})`;
-        result = result.rowsAffected
-        if (result) res.status(200).json({ message: "User succesfully added!" })
+        bcrypt.hash(password, 10, async (err, hash) => {
+            await sql.connect(config);
+            if (err) res.json({ message: "Hashing error" })
+            let result = await sql.query`INSERT INTO dbo.myusers VALUES (${firstname},${hash},${gender})`;
+            result = result.rowsAffected
+            if (result) res.status(200).json({ message: "User succesfully added!" })
+        });
     },
     // login user
     loginUser: async (req, res) => {
         const { id, password } = req.body
         let user = await getUser(id)
         if (user === "User not found") res.json({ message: user })
-        if (user.password === password) {
-            let token = await createToken({ userid: user.id })
-            res.status(200).json({ message: "Login successful", token })
-        }
-        else res.json({ message: "Check credentials" })
+        let hash = user.password
+        console.log(hash)
+        bcrypt.compare(password, hash, async (err, result) => {
+            if (result) {
+                let token = await createToken({ userid: user.id })
+                res.status(200).json({ userID: id,message: "Login successful", token })
+            }
+            else res.json({ message: "Check credentials" })
+        });
     },
     getAllUsers: async (req, res) => {
         try {
