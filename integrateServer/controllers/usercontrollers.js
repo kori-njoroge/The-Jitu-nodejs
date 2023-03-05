@@ -5,18 +5,25 @@ const { config } = require('../sqlconfig');
 const { createToken, validateToken } = require('../services/jwtServices')
 const { getUser } = require('../services/getUserService');
 const { sendMail } = require('../services/nodemailerServices');
+const validateSchema = require('../services/joiServices');
 
 module.exports = {
     // adding a user
     addUser: async (req, res) => {
-        let { firstname, password, gender } = req.body;
-        bcrypt.hash(password, 10, async (err, hash) => {
-            await sql.connect(config);
-            if (err) res.json({ message: "Hashing error" })
-            let result = await sql.query`INSERT INTO dbo.myusers VALUES (${firstname},${hash},${gender})`;
-            result = result.rowsAffected
-            if (result) res.status(200).json({ message: "User succesfully added!" })
-        });
+        let { firstname, password, gender,email } = req.body;
+        const { error, value } = validateSchema(req.body);
+        if (error) {
+            console.log(error)
+            res.json({ message: "Invalid Request", error});
+        } else {
+            bcrypt.hash(password, 10, async (err, hash) => {
+                await sql.connect(config);
+                if (err) res.json({ message: "Hashing error" })
+                let result = await sql.query`INSERT INTO dbo.myusers VALUES (${firstname},${hash},${gender},${email})`;
+                result = result.rowsAffected
+                if (result) res.status(200).json({ message: "User succesfully added!", value })
+            });
+        }
     },
     // login user
     loginUser: async (req, res) => {
@@ -28,7 +35,7 @@ module.exports = {
         bcrypt.compare(password, hash, async (err, result) => {
             if (result) {
                 let token = await createToken({ userid: user.id })
-                res.status(200).json({ userID: id,message: "Login successful", token })
+                res.status(200).json({ userID: id, message: "Login successful", token })
             }
             else res.json({ message: "Check credentials" })
         });
